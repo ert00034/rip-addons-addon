@@ -3,6 +3,9 @@
 ## Notes: Cross-reference installed addons with impacted list from ripaddons.com
 ## Author: ert00034
 ## Version: @project-version@
+## X-Website: https://ripaddons.com
+## X-Category: Utility
+## X-Project-Repo: https://github.com/ert00034/rip-addons-addon
 ## SavedVariables: RipAddonsDB
 
 # Core files

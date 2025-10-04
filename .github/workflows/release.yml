@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (e.g. 2025.10.04-0517)'
+        required: false
 
 jobs:
   package:
@@ -18,7 +23,15 @@ jobs:
         id: vars
         shell: bash
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          if [[ -n "${{ github.ref_name }}" ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION="${{ inputs.version }}"
+          fi
+          if [[ -z "$VERSION" ]]; then
+            echo "Version is empty; provide tag v* or input.version" >&2
+            exit 1
+          fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Set version in TOC
@@ -28,6 +41,7 @@ jobs:
       - name: Create zip
         run: |
           zip -r RipAddons-v${{ steps.vars.outputs.version }}.zip RipAddons
+          cp RipAddons-v${{ steps.vars.outputs.version }}.zip RipAddons.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -39,7 +53,16 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ github.ref_name }}
-          artifacts: RipAddons-v${{ steps.vars.outputs.version }}.zip
-          generateReleaseNotes: true
+          name: RIP Addons v${{ steps.vars.outputs.version }}
+          body: |
+            Automated package for version ${{ steps.vars.outputs.version }}.
+            Includes both versioned and stable assets.
+          allowUpdates: true
+          replacesArtifacts: true
+          artifacts: |
+            RipAddons-v${{ steps.vars.outputs.version }}.zip
+            RipAddons.zip
+          artifactErrorsFailBuild: true
+          makeLatest: true
 
 
