@@ -1,0 +1,13 @@
+## Interface: 110000
+## Title: RIP Addons
+## Notes: Cross-reference installed addons with impacted list from ripaddons.com
+## Author: ert00034
+## Version: @project-version@
+## SavedVariables: RipAddonsDB
+
+# Core files
+data/impacted_addons.lua
+Bindings.xml
+RipAddons.lua
+
+

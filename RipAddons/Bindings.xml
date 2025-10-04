@@ -1,0 +1,7 @@
+<Bindings>
+  <Binding name="RIPADDONS_TOGGLE" header="RIP Addons">
+    RipAddons:ToggleFrame()
+  </Binding>
+</Bindings>
+
+

@@ -1,0 +1,46 @@
+name: Update Impacted Addons
+
+on:
+  schedule:
+    - cron: '17 5 * * *' # daily at 05:17 UTC
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install fetch polyfill (Node 18+ has fetch, but ensure)
+        run: |
+          npm init -y >/dev/null 2>&1 || true
+          npm install --no-audit --no-fund --silent node-fetch@3
+
+      - name: Run generator
+        env:
+          IMPACTED_FEED_URL: ${{ secrets.IMPACTED_FEED_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          node scripts/generate-impacted.js --out RipAddons/data/impacted_addons.lua
+
+      - name: Commit changes
+        run: |
+          if git diff --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add RipAddons/data/impacted_addons.lua
+          git commit -m "chore: update impacted_addons.lua [ci]"
+          git push
+
+

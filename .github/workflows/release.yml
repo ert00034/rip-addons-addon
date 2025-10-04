@@ -1,0 +1,43 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Derive version
+        id: vars
+        shell: bash
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Set version in TOC
+        run: |
+          sed -i "s/@project-version@/${{ steps.vars.outputs.version }}/g" RipAddons/RipAddons.toc
+
+      - name: Create zip
+        run: |
+          zip -r RipAddons-v${{ steps.vars.outputs.version }}.zip RipAddons
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RipAddons-v${{ steps.vars.outputs.version }}
+          path: RipAddons-v${{ steps.vars.outputs.version }}.zip
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.ref_name }}
+          artifacts: RipAddons-v${{ steps.vars.outputs.version }}.zip
+          generateReleaseNotes: true
+
+
