@@ -18,6 +18,12 @@
 const fs = require('fs/promises');
 const path = require('path');
 
+// Known alias mappings where community slugs differ from addon folder names
+// Keys and values are both normalized (lowercase, alphanumerics only)
+const ALIAS_MAP = {
+  mdt: 'mythicdungeontools',
+};
+
 function parseArgs() {
   const args = process.argv.slice(2);
   const out = { in: undefined, out: 'RipAddons/data/impacted_addons.lua' };
@@ -36,6 +42,10 @@ function parseArgs() {
 
 function normalizeName(name) {
   return (name || '').toString().toLowerCase().replace(/[^0-9a-z]/gi, '');
+}
+
+function applyAlias(normalizedKey) {
+  return ALIAS_MAP[normalizedKey] || normalizedKey;
 }
 
 function normalizeSeverity(sev) {
@@ -106,8 +116,9 @@ function buildAddonsMap(items) {
   const map = new Map();
   for (const it of items) {
     const rawName = selectNameLike(it);
-    const key = normalizeName(rawName);
+    let key = normalizeName(rawName);
     if (!key) continue;
+    key = applyAlias(key);
     const sev = normalizeSeverity(it.severity || it.level || it.impact || it.rank);
     const note = selectNoteLike(it);
     const link = selectLinkLike(it);

@@ -52,6 +52,13 @@ Update this file from your source of truth (`ripaddons.com` or exports from [mid
 node scripts/generate-impacted.js --in path-or-url-to-feed.json --out RipAddons/data/impacted_addons.lua
 ```
 
+### Nightly automated releases
+- When the daily update workflow detects changes in the generated Lua file, it will:
+  - commit the update
+  - create a version tag like `vYYYY.MM.DD-HHMM`
+  - push the tag, which triggers the release workflow to package `RipAddons-v*.zip`
+- Result: GitHub Releases always has a fresh zip containing up-to-date impacted addons, and WowUp/CurseForge can ingest the latest zip automatically or manually.
+
 ## License
 MIT
 

@@ -31,16 +31,40 @@ jobs:
         run: |
           node scripts/generate-impacted.js --out RipAddons/data/impacted_addons.lua
 
-      - name: Commit changes
+      - name: Detect changes
+        id: changes
         run: |
-          if git diff --quiet; then
-            echo "No changes"
-            exit 0
+          if git diff --quiet RipAddons/data/impacted_addons.lua; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Commit changes
+        if: steps.changes.outputs.changed == 'true'
+        run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           git add RipAddons/data/impacted_addons.lua
           git commit -m "chore: update impacted_addons.lua [ci]"
           git push
+
+      - name: Compute release version
+        if: steps.changes.outputs.changed == 'true'
+        id: ver
+        run: |
+          VERSION=$(date -u +%Y.%m.%d-%H%M)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create and push tag to trigger release
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          TAG="v${{ steps.ver.outputs.version }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists; skipping"
+            exit 0
+          fi
+          git tag "$TAG"
+          git push origin "$TAG"
 
 
