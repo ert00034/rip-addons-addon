@@ -1,4 +1,4 @@
-## Interface: 110000
+## Interface: 110205
 ## Title: RIP Addons
 ## Notes: Cross-reference installed addons with impacted list from ripaddons.com
 ## Author: ert00034
