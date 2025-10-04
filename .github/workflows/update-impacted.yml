@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '17 5 * * *' # daily at 05:17 UTC
   workflow_dispatch:
+    inputs:
+      force_release:
+        description: 'Force release even if data did not change'
+        required: false
+        default: 'false'
 
 jobs:
   update:
@@ -34,10 +39,15 @@ jobs:
       - name: Detect changes
         id: changes
         run: |
-          if git diff --quiet RipAddons/data/impacted_addons.lua; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          else
+          FORCE='${{ inputs.force_release }}'
+          if [ "$FORCE" = "true" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            if git diff --quiet RipAddons/data/impacted_addons.lua; then
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+            fi
           fi
 
       - name: Commit changes
@@ -66,5 +76,27 @@ jobs:
           fi
           git tag "$TAG"
           git push origin "$TAG"
+
+      - name: Package zip (updater)
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          zip -r RipAddons-v${{ steps.ver.outputs.version }}.zip RipAddons
+          cp RipAddons-v${{ steps.ver.outputs.version }}.zip RipAddons.zip
+
+      - name: Create GitHub Release (updater)
+        if: steps.changes.outputs.changed == 'true'
+        uses: ncipollo/release-action@v1
+        with:
+          tag: v${{ steps.ver.outputs.version }}
+          name: RIP Addons v${{ steps.ver.outputs.version }}
+          body: |
+            Automated data update and package for version ${{ steps.ver.outputs.version }}.
+          allowUpdates: true
+          replacesArtifacts: true
+          artifacts: |
+            RipAddons-v${{ steps.ver.outputs.version }}.zip
+            RipAddons.zip
+          artifactErrorsFailBuild: true
+          makeLatest: true
 
 
