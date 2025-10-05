@@ -16,6 +16,13 @@ Cross-reference your installed addons against the impacted list from ripaddons.c
 1. Download a release zip and extract to your WoW `Interface/AddOns/` so you have `Interface/AddOns/RipAddons/`.
 2. In-game, run `/ripaddons scan` or bind the toggle keybinding.
 
+## Install via WowUp (recommended)
+1. Copy the stable download URL:
+   - `https://github.com/ert00034/rip-addons-addon/releases/latest/download/RipAddons.zip`
+2. In WowUp:
+   - Addons → Install from URL → paste the link → Install
+3. Ensure Auto Update is enabled so WowUp pulls nightly releases automatically.
+
 ## Data updates
 This addon reads `RipAddons/data/impacted_addons.lua`:
 
